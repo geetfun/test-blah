@@ -1,9 +1,6 @@
-%w( rubygems sinatra builder faster_xml_simple models/user_registration ).each do |lib|
+%w( rubygems sinatra yaml builder lib/parser/xml lib/configuration/user_registration models/user_registration ).each do |lib|
   require lib
 end
-
-enable :clean_trace
-disable :show_exceptions
 
 helpers do
   def full_error_message(error)
@@ -17,15 +14,17 @@ helpers do
   end
 end
 
+before do
+  content_type :xml
+end
+
+not_found do
+  erb :'404'
+end
+
 post "/user_registrations.xml" do
   begin
-    # error handling for incorrect XML
-    
-    # parsing the incoming XML    
-    doc = FasterXmlSimple.xml_in(@request.body.read)
-    doc = doc['register-user']
-    
-    # error handling for incomplete variables
+    doc = Parser::Xml.parse(@request.body.read)
  
     user = User.new(
       :email => assign_attribute(doc['email']), 
@@ -37,21 +36,18 @@ post "/user_registrations.xml" do
       @model_errors = user.errors
       puts @model_errors
       status(422)
-      content_type :xml
       builder :'errors/active_resource_errors', :locals => @model_errors
     end
     
-  rescue LibXML::XML::Error => e
-    status(201)
-    "Hello World"
-  rescue Sequel::DatabaseError => e
-    status(422)
-    content_type :xml
-    builder :'errors/general'
-  rescue RuntimeError => e
-    status(422)
-    content_type :xml
-    builder :'errors/general'
-    raise "Ugh: #{e}"
+  # rescue LibXML::XML::Error => e
+  #   status(201)
+  #   "Hello World"
+  # rescue Sequel::DatabaseError => e
+  #   status(422)
+  #   builder :'errors/general'
+  # rescue RuntimeError => e
+  #   status(422)
+  #   builder :'errors/general'
+  #   raise "Ugh: #{e}"
   end
 end

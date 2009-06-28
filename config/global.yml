@@ -1,0 +1,7 @@
+# Global Configuration for Services
+---
+# API Access Keys (future)
+:environment: :development
+:port: 8080
+:clean_trace: true
+:show_exceptions: false

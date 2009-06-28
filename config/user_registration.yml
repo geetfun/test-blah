@@ -1,0 +1,5 @@
+# User Registration Service Configuration
+---
+:db_development: scalerUsers_development
+:db_test: scalerUsers_test
+:db_production: scalerUsers_production
